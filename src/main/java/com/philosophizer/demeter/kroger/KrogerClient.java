@@ -1,18 +1,21 @@
 package com.philosophizer.demeter.kroger;
 
-import com.philosophizer.demeter.entity.Kroger.ProductSearchResponse;
-import com.philosophizer.demeter.entity.Kroger.ScoredProduct;
-import com.philosophizer.demeter.entity.Kroger.TokenResponse;
-import com.philosophizer.demeter.entity.Kroger.KrogerItemDto;
+import com.philosophizer.demeter.model.Kroger.ProductSearchResponse;
+import com.philosophizer.demeter.model.Kroger.ScoredProduct;
+import com.philosophizer.demeter.model.Kroger.TokenResponse;
+import com.philosophizer.demeter.model.Kroger.KrogerItemDto;
 import com.philosophizer.demeter.utils.SearchTermNormalizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbIgnore;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
@@ -37,7 +40,7 @@ public class KrogerClient {
                 System.out.println(request.getMethod() + " " + request.getURI());   // breakpoint works here too
                 return execution.execute(request, body);
             })
-            .build();
+            .requestFactory(timeouts()).build();
     private String cachedToken;
     private Instant cachedTokenExpiry = Instant.EPOCH;
     @Value("${kroger.search-url}")
@@ -47,10 +50,6 @@ public class KrogerClient {
     private static final double MIN_COVERAGE = 0.75;
     @Autowired
     public SearchTermNormalizer normalizer;
-
-
-
-
 
     public KrogerClient() {
     }
@@ -81,8 +80,9 @@ public class KrogerClient {
         return cachedToken;
     }
 
-    public List<KrogerItemDto> getProductsForSearchTerm(String searchTerm){
+    public List<KrogerItemDto> getProductsForRawTerm(String rawTerm){
 
+        String searchTerm = normalizer.standardize(rawTerm);
         ProductSearchResponse response = restClient.get()
                 .uri(searchUrl + "?filter.term={term}&filter.limit={limit}", searchTerm, 10)
                 .headers(h -> h.setBearerAuth(getToken()))
@@ -92,7 +92,8 @@ public class KrogerClient {
         return (response == null || response.data() == null) ? List.of() : response.data();
     }
 
-    public Optional<ScoredProduct> pickBest(String rawLine, List<KrogerItemDto> candidates) {
+    public Optional<ScoredProduct> pickBest(String rawLine) {
+        List<KrogerItemDto> candidates = getProductsForRawTerm(rawLine);
         Set<String> query = normalizer.stemmedTokens(rawLine);
         if (query.isEmpty() || candidates == null) return Optional.empty();
 
@@ -107,6 +108,16 @@ public class KrogerClient {
                 .min(Comparator.comparingDouble((ScoredProduct s) -> -s.coverage())
                         .thenComparingInt(ScoredProduct::extraTokens));
     }
+
+    private static JdkClientHttpRequestFactory timeouts() {
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
+        factory.setReadTimeout(Duration.ofSeconds(10));
+        return factory;
+
+    }
+
+
 
 
 

@@ -1,4 +1,4 @@
-package com.philosophizer.demeter.entity.Kroger;
+package com.philosophizer.demeter.model.Kroger;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

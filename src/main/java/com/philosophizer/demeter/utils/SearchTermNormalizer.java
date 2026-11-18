@@ -20,8 +20,8 @@ import java.util.regex.Pattern;
 public class SearchTermNormalizer {
     private static final String version = "v1";
     private static final Pattern QTY = Pattern.compile("\\d+(\\.\\d+)?(packs|bags|packages|boxes|containers|jars|tubs|oz|lb|lbs|g|kg|ct|ml|l|gal|box|pack|package|tub|jar|can|p|gallon|quart||pint|ml)?");
-    public static EnglishAnalyzer englishAnalyzer;
-    public static StandardAnalyzer krogerApiAnalyzer;
+    public static EnglishAnalyzer englishAnalyzer; //analyze for cache token formation
+    public static StandardAnalyzer krogerApiAnalyzer; //analyze for kroger search term formation
 
 
     public SearchTermNormalizer() {

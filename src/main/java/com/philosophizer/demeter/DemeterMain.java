@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import com.philosophizer.demeter.model.Kroger.ScoredProduct;
 
 import java.util.Optional;
 
@@ -21,7 +22,7 @@ public class DemeterMain {
     @Bean
     CommandLineRunner debugRun(KrogerClient krogerClient, SearchTermNormalizer searchTermNormalizer) {
         return args -> {
-            Optional<KrogerClient.ScoredProduct> token = krogerClient.pickBest("milk chocolate", krogerClient.getProductsForSearchTerm("milk chocolate"));
+            Optional<ScoredProduct> token = krogerClient.pickBest("milk chocolate");
 
             System.out.println(token.toString());
 

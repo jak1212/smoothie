@@ -1,4 +1,4 @@
-package com.philosophizer.demeter.entity.Kroger;
+package com.philosophizer.demeter.model.Kroger;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
@@ -25,4 +25,16 @@ public record KrogerItemDto(String productId, String upc, String description, St
     public String brand() {
         return brand;
     }
+
+    @Override
+    public String toString() {
+        return "KrogerItemDto{" +
+                "productId='" + productId + '\'' +
+                ", upc='" + upc + '\'' +
+                ", description='" + description + '\'' +
+                ", brand='" + brand + '\'' +
+                '}';
+    }
+
+
 }
