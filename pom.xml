@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>org.philosophizer.demeter</groupId>
-    <artifactId>demeter_v1</artifactId>
+    <artifactId>smoothie_v1</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
